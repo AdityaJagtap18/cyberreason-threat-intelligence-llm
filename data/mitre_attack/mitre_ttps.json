@@ -1,0 +1,131 @@
+[
+  {
+    "technique_id": "T1059.001",
+    "name": "PowerShell Scripting Interpreter",
+    "tactic": "Execution",
+    "description": "Adversaries abuse PowerShell to execute arbitrary commands and evade signature-based detection.",
+    "indicators": [
+      "powershell.exe -ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -EncodedCommand",
+      "IEX (New-Object Net.WebClient).DownloadString",
+      "System.Management.Automation.PowerShell"
+    ],
+    "detection_sources": [
+      "Process Creation (Event ID 4688)",
+      "Script Block Logging (Event ID 4104)"
+    ],
+    "containment": "Enforce ConstrainedLanguage mode, enable script block logging, isolate affected workstation."
+  },
+  {
+    "technique_id": "T1078.002",
+    "name": "Valid Accounts: Domain Accounts",
+    "tactic": "Defense Evasion, Persistence, Privilege Escalation, Initial Access",
+    "description": "Adversaries compromise and leverage legitimate domain user or service accounts to traverse enterprise networks.",
+    "indicators": [
+      "Logon type 3/10 with unusual kerberos ticket granting request (TGS)",
+      "Domain admin account active from non-standard internal subnet",
+      "Concurrent logon sessions across multiple domain controllers"
+    ],
+    "detection_sources": [
+      "Security Event Log (Event ID 4624, 4672, 4768)",
+      "Active Directory Telemetry"
+    ],
+    "containment": "Revoke active Kerberos tickets (krbtgt double-reset), reset compromised credentials, terminate RDP/SMB sessions."
+  },
+  {
+    "technique_id": "T1021.002",
+    "name": "Remote Services: SMB/Windows Admin Shares",
+    "tactic": "Lateral Movement",
+    "description": "Adversaries use SMB admin shares (C$, ADMIN$, IPC$) to propagate payloads across enterprise hosts.",
+    "indicators": [
+      "Net use \\\\target\\C$ /user:domain\\admin",
+      "PsExec service installation (PSEXESVC.exe) over IPC$",
+      "High volume SMB port 445 traffic between internal workstations"
+    ],
+    "detection_sources": [
+      "Network Flow logs (Port 445)",
+      "Service Creation (Event ID 7045)"
+    ],
+    "containment": "Block workstation-to-workstation SMB port 445 via host firewalls, restrict RPC access."
+  },
+  {
+    "technique_id": "T1486",
+    "name": "Data Encrypted for Impact",
+    "tactic": "Impact",
+    "description": "Adversaries encrypt data on target systems to interrupt system and network resource availability, typically as ransomware.",
+    "indicators": [
+      "Rapid modification of file extensions to .lockbit, .blackcat, or .crypted",
+      "Execution of vssadmin delete shadows /all /quiet",
+      "Mass file rename activity exceeding 500 files/min in user and shared drives"
+    ],
+    "detection_sources": [
+      "File Integrity Monitoring (FIM)",
+      "Volume Shadow Copy Service event logs"
+    ],
+    "containment": "Immediate network port isolation, freeze storage volume snapshots, invoke cold backup recovery."
+  },
+  {
+    "technique_id": "T1003.001",
+    "name": "OS Credential Dumping: LSASS Memory",
+    "tactic": "Credential Access",
+    "description": "Adversaries attempt to access Local Security Authority Subsystem Service (LSASS) memory to harvest plaintext passwords and NTLM hashes.",
+    "indicators": [
+      "Procdump.exe -ma lsass.exe lsass.dmp",
+      "Mimikatz sekurlsa::logonpasswords",
+      "PROCESS_VM_READ access right requested on lsass.exe by unprivileged process"
+    ],
+    "detection_sources": [
+      "Sysmon Event ID 10 (ProcessAccess)",
+      "Security Event Log 4663"
+    ],
+    "containment": "Enable LSA Protection (RunAsPPL), isolate host, perform domain-wide credential hygiene."
+  },
+  {
+    "technique_id": "T1190",
+    "name": "Exploit Public-Facing Application",
+    "tactic": "Initial Access",
+    "description": "Adversaries exploit vulnerabilities in internet-facing services to execute arbitrary commands.",
+    "indicators": [
+      "JNDI lookup strings (${jndi:ldap://...}) in HTTP User-Agent / URI headers",
+      "Anomalous child process spawned by w3wp.exe, java.exe, or httpd.exe",
+      "Outbound LDAP/DNS queries originating from web tier servers"
+    ],
+    "detection_sources": [
+      "WAF Access Logs",
+      "Web Server Egress Telemetry",
+      "EDR Process Lineage"
+    ],
+    "containment": "Apply vendor security patch, place web application behind strict WAF virtual patch, rotate server credentials."
+  },
+  {
+    "technique_id": "T1053.005",
+    "name": "Scheduled Task/Job: Scheduled Task",
+    "tactic": "Execution, Persistence, Privilege Escalation",
+    "description": "Adversaries configure scheduled tasks to execute malicious binaries periodically or upon system startup.",
+    "indicators": [
+      "schtasks /create /tn SecurityUpdate /tr powershell -enc ... /sc onstart",
+      "Task creation under C:\\Windows\\System32\\Tasks with hidden attribute",
+      "Task Scheduler Operational Log (Event ID 106, 140)"
+    ],
+    "detection_sources": [
+      "Task Scheduler Event Logs",
+      "Sysmon Event ID 1"
+    ],
+    "containment": "Query and delete unauthorized scheduled tasks via schtasks /delete, inspect scheduled registry keys."
+  },
+  {
+    "technique_id": "T1566.001",
+    "name": "Phishing: Spearphishing Attachment",
+    "tactic": "Initial Access",
+    "description": "Adversaries send targeted emails with malicious attachments to gain initial entry.",
+    "indicators": [
+      "Inbound email with password-protected ZIP archive containing .vbs or .hta",
+      "WINWORD.EXE spawning cmd.exe or powershell.exe",
+      "Attachment hash matching known Emotet/Qakbot loaders"
+    ],
+    "detection_sources": [
+      "Email Security Gateway Logs",
+      "Endpoint EDR Process Tree"
+    ],
+    "containment": "Quarantine malicious email domain-wide, purge mailbox attachments, isolate endpoint executing payload."
+  }
+]

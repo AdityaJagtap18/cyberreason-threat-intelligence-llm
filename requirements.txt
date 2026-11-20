@@ -1,0 +1,14 @@
+# PRJ-07: CyberReason - Air-Gapped Threat Intelligence Reasoning Dependencies
+torch>=2.1.0
+transformers>=4.36.0
+datasets>=2.16.0
+peft>=0.7.0
+trl>=0.7.0
+accelerate>=0.25.0
+bitsandbytes>=0.42.0; sys_platform != "win32"
+pandas>=2.0.0
+numpy>=1.24.0
+pyyaml>=6.0
+streamlit>=1.30.0
+pytest>=7.4.0
+pytest-cov>=4.1.0

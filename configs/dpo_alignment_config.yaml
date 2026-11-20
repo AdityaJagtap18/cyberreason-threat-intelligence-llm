@@ -1,0 +1,28 @@
+# PRJ-07: CyberReason - Direct Preference Optimization (DPO) Alignment Configuration
+alignment:
+  method: "DPO"
+  beta: 0.1
+  loss_type: "sigmoid"
+  max_prompt_length: 1024
+  max_length: 2048
+  reference_free: false
+
+model:
+  active_model_path: "models/sft_adapter"
+  reference_model_quantization: 4
+  gradient_checkpointing: true
+
+training:
+  per_device_train_batch_size: 1
+  gradient_accumulation_steps: 8
+  learning_rate: 5.0e-6
+  lr_scheduler_type: "linear"
+  warmup_ratio: 0.1
+  num_train_epochs: 2
+  logging_steps: 5
+  seed: 42
+
+evaluation:
+  target_attribution_accuracy: 0.82
+  baseline_attribution_accuracy: 0.54
+  expected_gain_pct: 28.0
